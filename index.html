@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>一緒にお手紙</title>
+  <link href="chat_kadai.css" rel="stylesheet" type="text/css" media="all">
+
+</head>
+<body>
+
+<!-- コンテンツ表示画面 -->
+<h1>一緒にお手紙を書こう</h1>
+
+<id="write-letter-section">
+  <h2>お手紙を書く</h2>
+  <p>
+  <input type="text" id="nameInput" placeholder="名前">
+  </p>
+
+  <textarea id="messageInput" placeholder="メッセージ本文"></textarea>
+  <input type="color" id="colorPicker" value="#000000">
+  
+  <p>
+  <button id="send">投稿する</button>
+  </p>
+
+</div>
+
+<div id="letters-section">
+  <h2>お手紙エリア</h2>
+  <div id="letterContainer"></div>
+</div>
+
+<div id="output" style="overflow: auto;height: 300px;"></div>
+
+
+<!--/ コンテンツ表示画面 -->
+
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- JQuery -->
+
+
+<!--** 以下Firebase **-->
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getDatabase, ref, push, set, update, remove, onChildAdded, onChildChanged, onChildRemoved }
+  from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+  
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+      apiKey: "Your API Key",
+      authDomain: "Your Auth Domain",
+      projectId: "Your Project ID",
+      storageBucket: "Your Storage Bucket",
+      messagingSenderId: "Your Messaging Sender ID",
+      appId: "Your App ID"
+  };
+  
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const dbRef = ref(db, "chat");
+
+
+    // 送信
+    $("#send").on("click",function(){
+      const msg ={
+        uname: $("#nameInput").val(), 
+        text : $("#messageInput").val(),
+        color : $("#colorPicker").val(),
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      }
+      const newPostRef = push(dbRef); //ユニークキーを生成、pushできる状況を作って
+      // console.log(newPostRef);
+      set(newPostRef,msg);　//DBに値をセットする
+
+    });
+
+
+    //最初にデータ取得＆onSnapchotでリアルタイムデータを取得
+    onChildAdded(dbRef, function(data) {
+      const msg = data.val();//オブジェクト変数
+      const key = data.key; //ユニークキー　データの削除更新に必要
+      const timestamp = new Date(msg.timestamp);
+      let h = '<p id="'+key+'">';
+          h += msg.uname;
+          h += '<br>';
+          h += '<span contentEditable="true" id="'+key+'_update">'+msg.text+'</span>';
+          h += '<span class="remove" data-key="'+key+'">🗑️</span>'
+          h += '<span class="update" data-key="'+key+'">🆙</span>'
+          h += '<br>投稿日時: ' + timestamp.toLocaleString(); 
+          // h += msg.text;
+          h += '</p>';
+          $("#output").prepend(h);
+    });
+
+      //削除イベント
+     $("#output").on("click",".remove",function(){
+      const key = $(this).attr("data-key"); //this　ここだけ
+      const remove_item = ref(db,"chat/"+key);
+      remove(remove_item); //Firebaceデータ削除関数      
+     });
+
+     //更新イベント
+     $("#output").on("click",".update",function(){
+      const key = $(this).attr("data-key");
+      update (ref(db,"chat/"+key),{
+              text: $("#"+key+'_update').html()
+         });
+    });
+
+  </script>
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

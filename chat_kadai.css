@@ -1,0 +1,15 @@
+body {
+  background-color: #fffdd0; 
+  text-align: center;
+}
+
+h1 {
+  color: #ffA500; 
+}
+
+
+#output {
+    /* 他のスタイルが適用されていないことを確認 */
+    color: inherit; /* あるいは適切な値 */
+    background-color: inherit; /* あるいは適切な値 */
+  }
